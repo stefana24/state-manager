@@ -1,36 +1,32 @@
-import PubSub from "../pattern/PubSub";
+import pubSub from "../pattern/pubSub";
 export default class Store {
   constructor(params) {
-    let self = this;
-    self.actions = {};
-    self.state = {};
+    this.actions = {};
+    this.state = {};
+    this.pubSub = pubSub();
     if (params.hasOwnProperty("actions")) {
-      self.actions = params.actions;
+      this.actions = params.actions;
     }
 
     if (params.hasOwnProperty("state")) {
-      self.state = params.state;
+      this.state = params.state;
     }
   }
 
   dispatch(actionType) {
-    let self = this;
     this.actionHandler(actionType);
-    console.log(self.state.counter);
   }
 
   actionHandler(actionType) {
-    let self = this;
-    console.log(`ACTION: ${actionType}`);
-    self.state.counter = self.actions(self.state, actionType).counter;
-    this.mutateState();
+    this.mutateState(this.actions(this.state, actionType).counter);
   }
 
-  mutateState() {
-    let self = this;
-    self.events = new PubSub();
-    console.log(self.events);
-    // Publish the change event for the components that are listening
-    self.events.publish("stateChange", self.state);
+  mutateState(param) {
+    this.state.counter = param;
+    this.pubSub.publish("stateChange", this.state.counter);
+  }
+
+  subscribe(event, callback) {
+    this.pubSub.subscribe(event, callback);
   }
 }
